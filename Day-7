@@ -37,7 +37,7 @@ if angle<math.radians(5):
 elif side>0:
     steering="Left"
 else:
-    steering="Rght"
+    steering="Right"
     
 #Move forward
 
