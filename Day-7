@@ -1,0 +1,50 @@
+import math
+
+#Car info
+
+car_position=[0,0]
+car_rotation=[0,math.radians(45),0]  #90does it mean it will be facing along y axis?
+speed=200                     
+
+#Ball setup
+
+ball_position=[500,500]
+
+#Direction the car is facing
+yaw=car_rotation[1]
+#pitch=car_rotation[0]
+#roll=car_rotation[2]
+car_facing=[math.cos(yaw),math.sin(yaw)]
+
+#Direction to ball
+to_ball=[
+         ball_position[0]-car_position[0], ball_position[1]-car_position[1]
+        ]
+
+#Normalise to_ball
+magnitude=math.sqrt(to_ball[0]**2 + to_ball[1]**2)
+to_ball_normalized=[to_ball[0]/magnitude, to_ball[1]/magnitude]
+
+#Dot & cross to get angle + side
+dot=car_facing[0]*to_ball_normalized[0] + car_facing[1]*to_ball_normalized[1]
+angle=math.acos(dot) #in radians
+side=car_facing[0]*to_ball_normalized[1]-car_facing[1]*to_ball_normalized[0]
+
+#steering
+
+if angle<math.radians(5):
+    steering="Straight"
+elif side>0:
+    steering="Left"
+else:
+    steering="Rght"
+    
+#Move forward
+
+car_position[0]=car_position[0]+ car_facing[0]*speed
+car_position[1]=car_position[1]+ car_facing[1]*speed
+
+#Ouput
+print("car_position", [round(p,2) for p in car_position])
+print("Facing:", [round(f,2) for f in car_facing])
+print("Steering:", steering)
