@@ -3,7 +3,7 @@ import math
 #Car info
 
 car_position=[0,0]
-car_rotation=[0,math.radians(45),0]  #90does it mean it will be facing along y axis?
+car_rotation=[0,math.radians(45),0] 
 speed=200                     
 
 #Ball setup
@@ -11,8 +11,8 @@ speed=200
 ball_position=[500,500]
 
 #Direction the car is facing
-yaw=car_rotation[1]
-#pitch=car_rotation[0]
+yaw=car_rotation[1] # [0] means x axis, [1] means y and [2] means z axis
+#pitch=car_rotation[0] # car_rotation = [roll, pitch, yaw]
 #roll=car_rotation[2]
 car_facing=[math.cos(yaw),math.sin(yaw)]
 
