@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cross product — left or right?</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #efefeb;
+    --border: rgba(0,0,0,0.12);
+    --border-strong: rgba(0,0,0,0.22);
+    --text-primary: #1a1a18;
+    --text-secondary: #5f5e5a;
+    --text-tertiary: #9c9a92;
+    --purple: #534AB7;
+    --purple-dark: #3C3489;
+    --teal: #1D9E75;
+    --teal-dark: #085041;
+    --teal-light: #E1F5EE;
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #712B13;
+    --green-dark: #0F6E56;
+    --gray-mid: #888780;
+    --gray-dark: #5F5E5A;
+    --success-bg: #E1F5EE;
+    --success-text: #085041;
+    --danger-bg: #FAECE7;
+    --danger-text: #712B13;
+    --font-sans: 'Instrument Sans', 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #18181a;
+      --surface: #222224;
+      --border: rgba(255,255,255,0.1);
+      --border-strong: rgba(255,255,255,0.2);
+      --text-primary: #e8e6de;
+      --text-secondary: #a8a69e;
+      --text-tertiary: #6a6860;
+      --purple: #7F77DD;
+      --purple-dark: #AFA9EC;
+      --teal: #5DCAA5;
+      --teal-dark: #9FE1CB;
+      --teal-light: #04342C;
+      --coral: #F0997B;
+      --coral-light: #4A1B0C;
+      --coral-dark: #F5C4B3;
+      --green-dark: #5DCAA5;
+      --gray-mid: #B4B2A9;
+      --gray-dark: #888780;
+      --success-bg: #04342C;
+      --success-text: #9FE1CB;
+      --danger-bg: #4A1B0C;
+      --danger-text: #F5C4B3;
+    }
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .container { width: 100%; max-width: 780px; }
+
+  header { margin-bottom: 1.5rem; }
+  header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
+  header p  { font-size: 0.875rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.6; }
+
+  .controls {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .controls label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+  .controls input[type=range] { flex: 1; min-width: 120px; accent-color: var(--purple); cursor: pointer; }
+  .angle-badge {
+    font-size: 13px; font-family: var(--font-mono); font-weight: 500;
+    background: var(--surface); border: 0.5px solid var(--border);
+    padding: 3px 10px; border-radius: 20px; min-width: 52px; text-align: center;
+  }
+
+  .svg-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  .svg-wrap svg { width: 100%; display: block; }
+
+  .stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .stat-box {
+    flex: 1; min-width: 120px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+  }
+  .stat-box.highlight { border-color: var(--border-strong); }
+  .stat-lbl { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .stat-val { font-size: 15px; font-weight: 500; font-family: var(--font-mono); }
+
+  .verdict {
+    padding: 11px 16px; border-radius: 8px;
+    font-size: 14px; font-weight: 500; text-align: center;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  footer { margin-top: 1.5rem; font-size: 12px; color: var(--text-tertiary); text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Cross product — left or right?</h1>
+    <p>Drag the slider to move the ball direction. The arc shows the sweep from <strong>car_facing</strong> toward the ball — CCW means left, CW means right.</p>
+  </header>
+
+  <div class="controls">
+    <label>Ball angle</label>
+    <input type="range" min="0" max="359" value="110" id="ball-slider" step="1">
+    <span class="angle-badge" id="angle-out">110°</span>
+  </div>
+
+  <div class="svg-wrap">
+    <svg viewBox="0 0 640 300" id="cross-svg"></svg>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-lbl">ax × by</div>
+      <div class="stat-val" id="v-axby" style="color:var(--purple);"></div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">ay × bx</div>
+      <div class="stat-val" id="v-aybx" style="color:var(--teal);"></div>
+    </div>
+    <div class="stat-box highlight">
+      <div class="stat-lbl">side = ax×by − ay×bx</div>
+      <div class="stat-val" id="v-side"></div>
+    </div>
+  </div>
+
+  <div class="verdict" id="verdict"></div>
+
+  <footer>car_facing is fixed at 45° &nbsp;·&nbsp; both vectors are unit length</footer>
+
+</div>
+<script>
+const CX = 160, CY = 150, SC = 110;
+const CAR_ANGLE = Math.PI / 4;
+
+function v(a) { return { x: Math.cos(a), y: -Math.sin(a) }; }
+
+function redraw(ballDeg) {
+  const ballAngle = ballDeg * Math.PI / 180;
+  const cf = v(CAR_ANGLE);
+  const tb = v(ballAngle);
+
+  const side = cf.x * tb.y - cf.y * tb.x;
+  const dot  = cf.x * tb.x + cf.y * tb.y;
+  const angleDeg = Math.acos(Math.max(-1, Math.min(1, dot))) * 180 / Math.PI;
+
+  const ex = CX + cf.x*SC, ey = CY + cf.y*SC;
+  const bx = CX + tb.x*SC, by = CY + tb.y*SC;
+
+  const isLeft     = side >  0.05;
+  const isRight    = side < -0.05;
+  const isStraight = !isLeft && !isRight;
+
+  const sweepColor = isLeft ? '#1D9E75' : isRight ? '#D85A30' : '#888780';
+
+  let h = `<defs>
+    <marker id="arr-car" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-ball" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arr-sweep" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="${sweepColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>`;
+
+  h += `<circle cx="${CX}" cy="${CY}" r="${SC}" fill="none" stroke="rgba(128,128,128,0.18)" stroke-width="0.75" stroke-dasharray="3 3"/>`;
+
+  const arcR = SC * 0.55;
+  const startA = -CAR_ANGLE;
+  const endA   = -ballAngle;
+  let delta = ballAngle - CAR_ANGLE;
+  while (delta >  Math.PI) delta -= 2*Math.PI;
+  while (delta < -Math.PI) delta += 2*Math.PI;
+  const sweepFlag = delta < 0 ? 1 : 0;
+  const largeFlag = Math.abs(delta) > Math.PI ? 1 : 0;
+  const ax1 = CX + arcR*Math.cos(startA), ay1 = CY + arcR*Math.sin(startA);
+  const ax2 = CX + arcR*Math.cos(endA),   ay2 = CY + arcR*Math.sin(endA);
+
+  if (Math.abs(angleDeg) > 3) {
+    h += `<path d="M ${ax1} ${ay1} A ${arcR} ${arcR} 0 ${largeFlag} ${sweepFlag} ${ax2} ${ay2}" fill="none" stroke="${sweepColor}" stroke-width="1.5" marker-end="url(#arr-sweep)" opacity="0.85"/>`;
+    const midDelta = delta / 2;
+    const midA2 = -(CAR_ANGLE + midDelta);
+    const lx = CX + (arcR+20)*Math.cos(midA2), ly = CY + (arcR+20)*Math.sin(midA2);
+    h += `<text x="${lx}" y="${ly}" font-size="11" fill="${sweepColor}" text-anchor="middle" font-family="sans-serif" font-weight="500">${isLeft?'CCW':isRight?'CW':''}</text>`;
+  }
+
+  h += `<line x1="${CX}" y1="${CY}" x2="${ex}" y2="${ey}" stroke="#534AB7" stroke-width="2.5" marker-end="url(#arr-car)"/>`;
+  h += `<text x="${ex+cf.x*14}" y="${ey+cf.y*14}" font-size="12" fill="#3C3489" text-anchor="middle" font-family="sans-serif" font-weight="500">car</text>`;
+
+  h += `<line x1="${CX}" y1="${CY}" x2="${bx}" y2="${by}" stroke="#1D9E75" stroke-width="2.5" marker-end="url(#arr-ball)"/>`;
+  h += `<text x="${bx+tb.x*14}" y="${by+tb.y*14}" font-size="12" fill="#085041" text-anchor="middle" font-family="sans-serif" font-weight="500">ball</text>`;
+
+  h += `<circle cx="${CX}" cy="${CY}" r="5" fill="#888780" opacity="0.6"/>`;
+  h += `<circle cx="${bx}" cy="${by}" r="8" fill="#1D9E75" opacity="0.2"/>`;
+  h += `<circle cx="${bx}" cy="${by}" r="5" fill="#1D9E75" opacity="0.75"/>`;
+
+  const iX = 360;
+  h += `<rect x="${iX}" y="30" width="255" height="240" rx="10" fill="rgba(128,128,128,0.07)" stroke="rgba(128,128,128,0.18)" stroke-width="0.5"/>`;
+
+  h += `<text x="${iX+16}" y="58"  font-size="12" fill="#888780"  font-family="monospace">car_facing</text>`;
+  h += `<text x="${iX+16}" y="76"  font-size="12" fill="#3C3489"  font-family="monospace">[${cf.x.toFixed(2)}, ${(-cf.y).toFixed(2)}]</text>`;
+  h += `<text x="${iX+16}" y="106" font-size="12" fill="#888780"  font-family="monospace">to_ball_normalized</text>`;
+  h += `<text x="${iX+16}" y="124" font-size="12" fill="#085041"  font-family="monospace">[${tb.x.toFixed(2)}, ${(-tb.y).toFixed(2)}]</text>`;
+
+  h += `<line x1="${iX+16}" y1="138" x2="${iX+239}" y2="138" stroke="rgba(128,128,128,0.2)" stroke-width="0.5"/>`;
+
+  h += `<text x="${iX+16}"   y="160" font-size="12" fill="#888780" font-family="monospace">ax×by</text>`;
+  h += `<text x="${iX+239}"  y="160" font-size="12" fill="#534AB7" font-family="monospace" text-anchor="end">${(cf.x*tb.y).toFixed(3)}</text>`;
+  h += `<text x="${iX+16}"   y="180" font-size="12" fill="#888780" font-family="monospace">ay×bx</text>`;
+  h += `<text x="${iX+239}"  y="180" font-size="12" fill="#1D9E75" font-family="monospace" text-anchor="end">${(cf.y*tb.x).toFixed(3)}</text>`;
+
+  h += `<line x1="${iX+16}" y1="194" x2="${iX+239}" y2="194" stroke="rgba(128,128,128,0.2)" stroke-width="0.5"/>`;
+
+  const sideColor = isLeft ? '#0F6E56' : isRight ? '#993C1D' : '#5F5E5A';
+  h += `<text x="${iX+16}"  y="216" font-size="13" fill="#888780" font-family="monospace" font-weight="500">side</text>`;
+  h += `<text x="${iX+239}" y="216" font-size="16" fill="${sideColor}" font-family="monospace" font-weight="500" text-anchor="end">${side.toFixed(3)}</text>`;
+
+  const steerLabel = isStraight ? 'Straight' : isLeft ? 'Turn LEFT' : 'Turn RIGHT';
+  const bgFill = isLeft ? '#E1F5EE' : isRight ? '#FAECE7' : 'rgba(128,128,128,0.08)';
+  const txtFill = isLeft ? '#085041' : isRight ? '#712B13' : '#888780';
+  h += `<rect x="${iX+16}" y="228" width="223" height="28" rx="6" fill="${bgFill}"/>`;
+  h += `<text x="${iX+127}" y="247" font-size="13" fill="${txtFill}" font-family="sans-serif" font-weight="500" text-anchor="middle">${steerLabel}</text>`;
+
+  document.getElementById('cross-svg').innerHTML = h;
+
+  document.getElementById('v-axby').textContent = (cf.x * tb.y).toFixed(3);
+  document.getElementById('v-aybx').textContent = (cf.y * tb.x).toFixed(3);
+  const sv = document.getElementById('v-side');
+  sv.textContent = side.toFixed(3);
+  sv.style.color = isLeft ? 'var(--green-dark)' : isRight ? 'var(--coral)' : 'var(--gray-dark)';
+
+  document.getElementById('angle-out').textContent = ballDeg + '°';
+
+  const verdict = document.getElementById('verdict');
+  if (isLeft) {
+    verdict.style.background = 'var(--success-bg)';
+    verdict.style.color = 'var(--success-text)';
+    verdict.textContent = 'side > 0  →  CCW sweep  →  ball is to the LEFT';
+  } else if (isRight) {
+    verdict.style.background = 'var(--danger-bg)';
+    verdict.style.color = 'var(--danger-text)';
+    verdict.textContent = 'side < 0  →  CW sweep  →  ball is to the RIGHT';
+  } else {
+    verdict.style.background = 'var(--surface)';
+    verdict.style.color = 'var(--text-secondary)';
+    verdict.textContent = 'side ≈ 0  →  ball is directly ahead or behind';
+  }
+}
+
+document.getElementById('ball-slider').addEventListener('input', function () {
+  redraw(parseInt(this.value));
+});
+
+redraw(110);
+</script>
+</body>
+</html>
