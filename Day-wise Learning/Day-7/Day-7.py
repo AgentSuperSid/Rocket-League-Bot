@@ -34,8 +34,10 @@ to_ball_normalized = [to_ball[0]/magnitude, to_ball[1]/magnitude] # Unit vector.
 dot = car_facing[0]*to_ball_normalized[0] + car_facing[1]*to_ball_normalized[1] # For dot product visualization try the html program "Dot_product_components.html". 
                                                                                  # Dot product is more like the agreement of each components(X and Y) of the individual vectors.
 angle = math.acos(dot) #in radians   # angle gives only the magnitude of how much side the ball is. It doesnt give which side it is.
-side = car_facing[0]*to_ball_normalized[1]-car_facing[1]*to_ball_normalized[0] #This gives -ve if ball is in right and +ve if ball is in left. 0 means they are facing straight.
-                                                                               # You can refer to similiar visualization as the dot product one. 
+side = car_facing[0]*to_ball_normalized[1]-car_facing[1]*to_ball_normalized[0] #C ross product
+
+# This gives -ve if ball is in right and +ve if ball is in left. 0 means they are facing straight.
+# You can refer to the cross porduct visualization for this.
 
 #steering
 
